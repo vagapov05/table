@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 
+import { useFormik } from 'formik';
+
 import CloseIcon from '@mui/icons-material/Close';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { Box, Grid, IconButton, Typography, TextField, Button, MenuItem, InputAdornment } from '@mui/material';
+import LoadingButton from '@mui/lab/LoadingButton';
+import { Box, Grid, IconButton, Typography, TextField, MenuItem, InputAdornment } from '@mui/material';
 
 import { collection, getDocs, addDoc } from 'firebase/firestore';
 import { db } from '../firebase-config';
@@ -25,42 +28,58 @@ const currencies = [
      value: 'Electronics',
      label: 'Electronics',
    },
-   {
-     value: 'Food',
-     label: 'Food',
-   },
 ];
 
 const AddForm = ({closeEvent}) => {
-   const [name, setName] = useState('');
-   const [price, setPrice] = useState(0);
-   const [category, setCategory] = useState('');
    const setRows = useAppStore((state) => state.setRows);
    const empCollectionRef = collection(db, 'products');
+   const [loading, setLoading] = useState(false);
 
    const handleNameChange = (event) => {
-      setName(event.target.value);
+      formik.setFieldValue('name', event.target.value);
    };
 
    const handlePriceChange = (event) => {
-      setPrice(event.target.value);
+      formik.setFieldValue('price', event.target.value);
    };
 
    const handleCategoryChange = (event) => {
-      setCategory(event.target.value);
+      formik.setFieldValue('category', event.target.value);
    };
 
-   const createUser = async() => {
-      await addDoc(empCollectionRef, {
-         name: name,
-         price: Number(price),
-         category: category,
-         date: String(new Date()),
-      })
-      getUsers();
-      closeEvent();
-      Swal.fire('Submitted!', 'Your file has been submitted.', 'success');
-   }
+   const formik = useFormik({
+      initialValues: {
+         name: '',
+         price: 0,
+         category: '',
+      },
+      onSubmit: async (values) => {
+         setLoading(true);
+         await addDoc(empCollectionRef, {
+            name: values.name,
+            price: Number(values.price),
+            category: values.category,
+            date: String(new Date()),
+         })
+         setLoading(false);
+         getUsers();
+         closeEvent();
+         Swal.fire('Submitted!', 'Your file has been submitted.', 'success');
+      },
+      validate: (values) => {
+         const errors = {};
+         if (!values.name) {
+            errors.name = 'Name is required';
+         }
+         if (!values.price) {
+            errors.price = 'Price is required';
+         }
+         if (!values.category) {
+            errors.category = 'Category is required';
+         }
+         return errors;
+      },
+   });
 
    const getUsers = async () => {
       const data = await getDocs(empCollectionRef);
@@ -71,37 +90,39 @@ const AddForm = ({closeEvent}) => {
    return (
       <>
          <Box sx={{m: 2}} />
-
          <Typography variant="h5" align='center'>Add product</Typography>
-         
          <IconButton style={{position: 'absolute', top: '0', right: '0'}} onClick={closeEvent}>
             <CloseIcon />
          </IconButton>
-
          <Box height={20} />
 
          <Grid container spacing={2}>
             <Grid item xs={12}>
                <TextField 
-                  value={name} 
+                  value={formik.values.name} 
                   id="outlined-basic" 
                   label="Name" 
                   variant="outlined" 
                   size='small' 
                   sx={{minWidth: '100%'}} 
                   onChange={handleNameChange}
+                  error={formik.touched.name && Boolean(formik.errors.name)}
+                  helperText={formik.touched.name && formik.errors.name}
                />
             </Grid>
 
             <Grid item xs={6}>
                <TextField 
-                  value={price}  
+                  value={formik.values.price} 
+                  type='number' 
                   id="outlined-basic" 
                   label="Price" 
                   variant="outlined" 
                   size='small' 
                   sx={{minWidth: '100%'}} 
                   onChange={handlePriceChange} 
+                  error={formik.touched.price && Boolean(formik.errors.price)}
+                  helperText={formik.touched.price && formik.errors.price}
                   InputProps={{
                      startAdornment: (
                         <InputAdornment position="start">
@@ -114,7 +135,7 @@ const AddForm = ({closeEvent}) => {
 
             <Grid item xs={6}>
                <TextField 
-                  value={category} 
+                  value={formik.values.category} 
                   select 
                   id="outlined-basic" 
                   label="Category" 
@@ -122,6 +143,8 @@ const AddForm = ({closeEvent}) => {
                   size='small' 
                   sx={{minWidth: '100%'}} 
                   onChange={handleCategoryChange}
+                  error={formik.touched.category && Boolean(formik.errors.category)}
+                  helperText={formik.touched.category && formik.errors.category}
                >
                   {currencies.map((option) => (
                      <MenuItem key={option.value} value={option.value}>
@@ -133,11 +156,17 @@ const AddForm = ({closeEvent}) => {
 
             <Grid item xs={12}>
                <Typography variant="h5" align='center'>
-                  <Button variant="contained" onClick={createUser}>Submit</Button>
+                  <LoadingButton 
+                     loading={loading} 
+                     disabled={loading} 
+                     variant="contained" 
+                     onClick={formik.handleSubmit}
+                  >
+                     Submit
+                  </LoadingButton>
                </Typography>
             </Grid>
          </Grid>
-
          <Box sx={{m: 4}} />
       </>
    )

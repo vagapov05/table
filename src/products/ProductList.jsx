@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { 
    Paper, 
    Table, 
@@ -16,21 +19,18 @@ import {
    Stack, 
    TextField, 
    Autocomplete, 
-   Modal 
+   Modal, 
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 
 import { collection, getDocs, deleteDoc, doc, } from 'firebase/firestore';
 import { db } from '../firebase-config';
 
 import Swal from 'sweetalert2';
 
+import { useAppStore } from '../appStore';
+
 import AddForm from './AddForm';
 import EditForm from './EditForm';
-
-import { useAppStore } from '../appStore';
 
 
 const style = {
@@ -45,23 +45,28 @@ const style = {
    p: 4,
 };
 
-export default function ProductList() {
+const ProductList = () => {
    const [page, setPage] = useState(0);
    const [rowsPerPage, setRowsPerPage] = useState(5);
-   const setRows = useAppStore((state) => state.setRows);
-   const rows = useAppStore((state) => state.rows);
    const [formid, setFormid] = useState('');
-   const [open, setOpen] = useState(false);
+
+   const rows = useAppStore((state) => state.rows);
+   const setRows = useAppStore((state) => state.setRows);
+   
+   const [addOpen, setAddOpen] = useState(false);
    const [editOpen, setEditOpen] = useState(false);
-   const handleOpen = () => setOpen(true);
+
+   const handleAddOpen = () => setAddOpen(true);
    const handleEditOpen = () => setEditOpen(true);
-   const handleClose = () => setOpen(false);
+   
+   const handleAddClose = () => setAddOpen(false);
    const handleEditClose = () => setEditOpen(false);
+
    const empCollectionRef = collection(db, 'products');
 
    useEffect(() => {
       getUsers();
-   }, [])
+   }, []);
 
    const getUsers = async () => {
       const data = await getDocs(empCollectionRef);
@@ -124,9 +129,9 @@ export default function ProductList() {
    return (
       <>
          <div>
-            <Modal open={open} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+            <Modal open={addOpen} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
                <Box sx={style}>
-                  <AddForm closeEvent={handleClose} />
+                  <AddForm closeEvent={handleAddClose} />
                </Box>
             </Modal>
 
@@ -138,29 +143,24 @@ export default function ProductList() {
          </div>
 
          {rows.length > 0 && (
-            <Paper sx={{ width: "100%" }}>
+            <Paper sx={{ width: "98%", overflow: 'hidden' }}>
                <Box height={15} />
-
                <Stack direction="row" spacing={2} className="my-2 mb-2">
                   <Autocomplete
-                     disablePortal
-                     id="combo-box-demo"
-                     options={rows}
-                     sx={{ width: 300 }}
-                     onChange={(e, v) => filterData(v)}
-                     getOptionLabel={(rows) => rows.name || ""}
+                     disablePortal 
+                     id="combo-box-demo" 
+                     options={rows} 
+                     sx={{ width: 300 }} 
+                     onChange={(e, v) => filterData(v)} 
+                     getOptionLabel={(rows) => rows.name || ""} 
                      renderInput={(params) => (
                         <TextField {...params} size="small" label="Search Products" />
                      )}
                   />
-
                   <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}></Typography>
-
-                  <Button variant="contained" endIcon={<AddIcon />} onClick={handleOpen}>Add</Button>
+                  <Button variant="contained" endIcon={<AddIcon />} onClick={handleAddOpen}>Add</Button>
                </Stack>
-
                <Box height={15} />
-
                <Divider />
                
                <TableContainer sx={{ maxHeight: 440 }}>
@@ -171,20 +171,20 @@ export default function ProductList() {
                            <TableCell align="right" style={{ minWidth: "100px" }}>Price</TableCell>
                            <TableCell align="right" style={{ minWidth: "100px" }}>Category</TableCell>
                            <TableCell align="right" style={{ minWidth: "100px" }}>Date</TableCell>
-                           <TableCell align="left" style={{ minWidth: "100px" }}>Action</TableCell>
+                           <TableCell align="center" style={{ minWidth: "100px" }}>Action</TableCell>
                         </TableRow>
                      </TableHead>
 
                      <TableBody>
-                        {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                        {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
                            return (
-                              <TableRow hover role="checkbox" tabIndex={-1}>
-                                 <TableCell key={row.id} align="left">{row.name}</TableCell>
-                                 <TableCell key={row.id} align="right">{row.price}</TableCell>
-                                 <TableCell key={row.id} align="right">{row.category}</TableCell>
-                                 <TableCell key={row.id} align="right">{row.date}</TableCell>
-                                 <TableCell key={row.id} align="right">
-                                    <Stack spacing={2} direction="row">
+                              <TableRow hover role="checkbox" tabIndex={-1} key={index}>
+                                 <TableCell align="left">{row.name}</TableCell>
+                                 <TableCell align="right">{row.price}</TableCell>
+                                 <TableCell align="right">{row.category}</TableCell>
+                                 <TableCell align="right">{row.date}</TableCell>
+                                 <TableCell align="right">
+                                    <Stack spacing={1} direction="row">
                                        <EditIcon
                                           style={{ fontSize: "20px", cursor: "pointer" }}
                                           className="cursor-pointer"
@@ -222,3 +222,5 @@ export default function ProductList() {
       </>
    );
 }
+
+export default ProductList;

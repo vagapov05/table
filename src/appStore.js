@@ -1,12 +1,10 @@
-import create from 'zustand';
+import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 
 let appStore = (set) => ({
-   dopen: true,
    rows: [],
-   setRows: (rows) => set((state) => ({rows: rows})),
-   updateDopen: (dopen) => set((state) => ({dopen: dopen})),
+   setRows: (rows) => set((state) => ({ rows: rows })),
 });
 
 appStore = persist(appStore, {name: 'cdot_store_api'});

@@ -7,7 +7,7 @@ import ProductList from './products/ProductList';
 
 const App = () => {
   return (
-    <Container maxWidth='xl' sx={{mt: 5}}>
+    <Container sx={{ mt: 5 }}>
       <ProductList />
     </Container>
   )
