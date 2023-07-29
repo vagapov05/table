@@ -7,12 +7,10 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { Box, Grid, IconButton, Typography, TextField, MenuItem, InputAdornment } from '@mui/material';
 
-import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase-config';
 
 import Swal from 'sweetalert2';
-
-import { useAppStore } from '../appStore';
 
 
 const currencies = [
@@ -30,9 +28,7 @@ const currencies = [
    },
 ];
 
-const EditForm = ({closeEvent, fid}) => {
-   const setRows = useAppStore((state) => state.setRows);
-   const empCollectionRef = collection(db, 'products');
+const EditForm = ({ closeEvent, fid, getUsers }) => {
    const [loading, setLoading] = useState(false);
 
    const handleNameChange = (event) => {
@@ -82,16 +78,10 @@ const EditForm = ({closeEvent, fid}) => {
          return errors;
       },
    });
-
-   const getUsers = async () => {
-      const data = await getDocs(empCollectionRef);
-      setRows(data.docs.map((doc) => ({...doc.data(), id: doc.id})));
-   }
    
 
    return (
       <>
-         <Box sx={{m: 2}} />
          <Typography variant="h5" align='center'>Edit product</Typography>
          <IconButton style={{position: 'absolute', top: '0', right: '0'}} onClick={closeEvent}>
             <CloseIcon />
@@ -169,7 +159,6 @@ const EditForm = ({closeEvent, fid}) => {
                </Typography>
             </Grid>
          </Grid>
-         <Box sx={{m: 4}} />
       </>
    )
 }

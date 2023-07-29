@@ -1,28 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { 
-   Paper, 
-   Table, 
-   TableBody, 
-   TableCell, 
-   TableContainer, 
-   TableHead, 
-   TablePagination, 
-   TableRow, 
-   Typography, 
-   Divider, 
-   Button, 
-   Box, 
-   Stack, 
-   TextField, 
-   Autocomplete, 
-   Modal, 
-} from '@mui/material';
+import { Paper, Typography, Button, Box, Modal } from '@mui/material';
+import { Stack } from '@mui/system';
 
-import { collection, getDocs, deleteDoc, doc, } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase-config';
 
 import Swal from 'sweetalert2';
@@ -31,6 +14,9 @@ import { useAppStore } from '../appStore';
 
 import AddForm from './AddForm';
 import EditForm from './EditForm';
+import Search from './Search';
+import ContainerTable from './ContainerTable';
+import Pagination from './Pagination';
 
 
 const style = {
@@ -49,6 +35,8 @@ const ProductList = () => {
    const [page, setPage] = useState(0);
    const [rowsPerPage, setRowsPerPage] = useState(5);
    const [formid, setFormid] = useState('');
+   const [checkedRows, setCheckedRows] = useState([]);
+   const [selectAll, setSelectAll] = useState(false);
 
    const rows = useAppStore((state) => state.rows);
    const setRows = useAppStore((state) => state.setRows);
@@ -95,7 +83,7 @@ const ProductList = () => {
          if (result.value) {
             deleteApi(id);
          }
-      });
+      })
    }
 
    const deleteApi = async (id) => {
@@ -103,6 +91,33 @@ const ProductList = () => {
       await deleteDoc(userDoc);
       Swal.fire("Deleted!", "Your file has been deleted.", "success");
       getUsers();
+   }
+
+   const deleteCheckedRows = async () => {
+      const ids = checkedRows;
+      const deletedRows = await Promise.all(
+         ids.map((id) => {
+            const userDoc = doc(db, "products", id);
+            return deleteDoc(userDoc);
+         })
+      )
+    
+      if (deletedRows.length > 0) { 
+         Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete them!",
+         }).then((result) => {
+            if (result.value) {
+               setCheckedRows([]);
+               getUsers();
+            }
+         })
+      }
    }
 
    const filterData = (v) => {
@@ -131,91 +146,54 @@ const ProductList = () => {
          <div>
             <Modal open={addOpen} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
                <Box sx={style}>
-                  <AddForm closeEvent={handleAddClose} />
+                  <AddForm closeEvent={handleAddClose} empCollectionRef={empCollectionRef} getUsers={getUsers} />
                </Box>
             </Modal>
 
             <Modal open={editOpen} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
                <Box sx={style}>
-                  <EditForm closeEvent={handleEditClose} fid={formid} />
+                  <EditForm closeEvent={handleEditClose} fid={formid} getUsers={getUsers} />
                </Box>
             </Modal>
          </div>
 
          {rows.length > 0 && (
-            <Paper sx={{ width: "98%", overflow: 'hidden' }}>
+            <Paper sx={{ width: "100%", overflow: 'hidden' }}>
                <Box height={15} />
-               <Stack direction="row" spacing={2} className="my-2 mb-2">
-                  <Autocomplete
-                     disablePortal 
-                     id="combo-box-demo" 
-                     options={rows} 
-                     sx={{ width: 300 }} 
-                     onChange={(e, v) => filterData(v)} 
-                     getOptionLabel={(rows) => rows.name || ""} 
-                     renderInput={(params) => (
-                        <TextField {...params} size="small" label="Search Products" />
-                     )}
-                  />
-                  <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}></Typography>
-                  <Button variant="contained" endIcon={<AddIcon />} onClick={handleAddOpen}>Add</Button>
-               </Stack>
-               <Box height={15} />
-               <Divider />
                
-               <TableContainer sx={{ maxHeight: 440 }}>
-                  <Table aria-label="sticky table">
-                     <TableHead>
-                        <TableRow>
-                           <TableCell align="left" style={{ minWidth: "100px" }}>Name</TableCell>
-                           <TableCell align="right" style={{ minWidth: "100px" }}>Price</TableCell>
-                           <TableCell align="right" style={{ minWidth: "100px" }}>Category</TableCell>
-                           <TableCell align="right" style={{ minWidth: "100px" }}>Date</TableCell>
-                           <TableCell align="center" style={{ minWidth: "100px" }}>Action</TableCell>
-                        </TableRow>
-                     </TableHead>
+               <Stack direction="row" spacing={2} className="my-2 mb-2">
+                  <Search rows={rows} filterData={filterData} />
+                  <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}></Typography>
 
-                     <TableBody>
-                        {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
-                           return (
-                              <TableRow hover role="checkbox" tabIndex={-1} key={index}>
-                                 <TableCell align="left">{row.name}</TableCell>
-                                 <TableCell align="right">{row.price}</TableCell>
-                                 <TableCell align="right">{row.category}</TableCell>
-                                 <TableCell align="right">{row.date}</TableCell>
-                                 <TableCell align="right">
-                                    <Stack spacing={1} direction="row">
-                                       <EditIcon
-                                          style={{ fontSize: "20px", cursor: "pointer" }}
-                                          className="cursor-pointer"
-                                          onClick={() => {
-                                             editData(row.id, row.name, row.price, row.category);
-                                          }}
-                                       />
+                  {!checkedRows.length > 0 ? (
+                     <Button variant="contained" endIcon={<AddIcon />} onClick={handleAddOpen}>
+                        Add
+                     </Button>
+                  ) : (
+                     <Button variant="contained" endIcon={<DeleteIcon />} onClick={deleteCheckedRows}>
+                        Delete
+                     </Button>
+                  )}
+               </Stack>
+               
+               <ContainerTable 
+                  rows={rows} 
+                  page={page} 
+                  rowsPerPage={rowsPerPage} 
+                  editData={editData} 
+                  deleteUser={deleteUser} 
+                  checkedRows={checkedRows} 
+                  setCheckedRows={setCheckedRows} 
+                  selectAll={selectAll} 
+                  setSelectAll={setSelectAll} 
+               />
 
-                                       <DeleteIcon
-                                          style={{ fontSize: "20px", cursor: "pointer" }}
-                                          onClick={() => {
-                                             deleteUser(row.id);
-                                          }}
-                                       />
-                                    </Stack>
-                                 </TableCell>
-                              </TableRow>
-                           );
-                        })}
-                     </TableBody>
-                  </Table>
-               </TableContainer>
-
-               <TablePagination
-                  rowsPerPageOptions={[5, 10, 15]}
-                  component="div"
-                  count={rows.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
+               <Pagination 
+                  rows={rows} 
+                  page={page} 
+                  rowsPerPage={rowsPerPage} 
+                  handleChangePage={handleChangePage} 
+                  handleChangeRowsPerPage={handleChangeRowsPerPage} 
                />
             </Paper>
          )}
