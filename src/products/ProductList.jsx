@@ -178,6 +178,7 @@ const ProductList = () => {
                
                <ContainerTable 
                   rows={rows} 
+                  setRows={setRows} 
                   page={page} 
                   rowsPerPage={rowsPerPage} 
                   editData={editData} 

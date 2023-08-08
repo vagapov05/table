@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Stack } from '@mui/system';
 import { Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from '@mui/material';
 
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { db } from '../firebase-config';
 
-const ContainerTable = ({ rows, page, rowsPerPage, editData, deleteUser, checkedRows, setCheckedRows, selectAll, setSelectAll }) => {
+
+const ContainerTable = ({ rows, setRows, page, rowsPerPage, editData, deleteUser, checkedRows, setCheckedRows, selectAll, setSelectAll }) => {
    const [sortBy, setSortBy] = useState('price');
    const [sortDirection, setSortDirection] = useState('asc');
-  
+
+   const empCollectionRef = collection(db, 'products');
+
+   useEffect(() => {
+      getProducts();
+   }, []);
+
+
+   const getProducts = async () => {
+      const q = query(empCollectionRef, orderBy(sortBy, sortDirection));
+      const data = await getDocs(q);
+      setRows(data.docs.map((doc) => ({...doc.data(), id: doc.id})));
+   };
+
    const handleChangeSortDirection = () => {
       if (sortDirection === 'asc') {
          setSortDirection('desc');
@@ -18,6 +34,7 @@ const ContainerTable = ({ rows, page, rowsPerPage, editData, deleteUser, checked
       }
 
       setSortBy('price');
+      getProducts();
    };
 
    
@@ -59,15 +76,7 @@ const ContainerTable = ({ rows, page, rowsPerPage, editData, deleteUser, checked
                </TableHead>
 
                <TableBody>
-                  {rows.sort((a, b) => {
-                     if (sortBy === 'price') {
-                        if (sortDirection === 'desc') {
-                           return a.price - b.price;
-                        } else {
-                           return b.price - a.price;
-                        }
-                     }
-                  }).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                  {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
                      return (
                         <TableRow key={index}>
                            <TableCell align="left">
