@@ -19,14 +19,24 @@ const ContainerTable = ({ rows, setRows, page, rowsPerPage, editData, deleteUser
       getProducts();
    }, []);
 
-
    const getProducts = async () => {
       const q = query(empCollectionRef, orderBy(sortBy, sortDirection));
       const data = await getDocs(q);
       setRows(data.docs.map((doc) => ({...doc.data(), id: doc.id})));
    };
 
-   const handleChangeSortDirection = () => {
+   const handleChangeSortDirectionByName = () => {
+      if (sortDirection === 'asc') {
+         setSortDirection('desc');
+      } else {
+         setSortDirection('asc');
+      }
+
+      setSortBy('name');
+      getProducts();
+   };
+
+   const handleChangeSortDirectionByPrice = () => {
       if (sortDirection === 'asc') {
          setSortDirection('desc');
       } else {
@@ -37,7 +47,38 @@ const ContainerTable = ({ rows, setRows, page, rowsPerPage, editData, deleteUser
       getProducts();
    };
 
-   
+   const handleChangeSortDirectionByCategory = () => {
+      if (sortDirection === 'asc') {
+         setSortDirection('desc');
+      } else {
+         setSortDirection('asc');
+      }
+
+      setSortBy('category');
+      getProducts();
+   };
+
+   const handleChangeSortDirectionByDate = () => {
+      if (sortDirection === 'asc') {
+         setSortDirection('desc');
+      } else {
+         setSortDirection('asc');
+      }
+
+      setSortBy('date');
+      getProducts();
+   };
+
+   const handleSelectAll = () => {
+      setSelectAll(!selectAll);
+      if (selectAll) {
+         setCheckedRows(rows.map((row) => row.id));
+      } else {
+         setCheckedRows([]);
+      }
+   };
+
+
    return (
       <>
          <TableContainer>
@@ -48,29 +89,47 @@ const ContainerTable = ({ rows, setRows, page, rowsPerPage, editData, deleteUser
                         <Checkbox 
                            color="primary" 
                            size="small" 
-                           indeterminate={checkedRows.length === 0} 
-                           checked={selectAll} 
-                           onChange={() => {
-                              setSelectAll(!selectAll);
-                              if (selectAll) {
-                                 setCheckedRows(rows.map((row) => row.id));
-                              } else {
-                                 setCheckedRows([]);
-                              }
-                           }} 
+                           indeterminate={checkedRows.length > 0 && checkedRows.length < rows.length} 
+                           checked={rows.length > 0 && checkedRows.length === rows.length} 
+                           onChange={handleSelectAll} 
                         />
                      </TableCell>
-                     <TableCell align="left" style={{ minWidth: "100px" }}>Name</TableCell>
+                     <TableCell align="left" style={{ minWidth: "100px" }}>
+                        <TableSortLabel 
+                           active={sortBy === 'name'} 
+                           direction={sortDirection} 
+                           onClick={handleChangeSortDirectionByName} 
+                        >
+                           Name
+                        </TableSortLabel>
+                     </TableCell>
                      <TableCell align="right" style={{ minWidth: "100px" }}>
                         <TableSortLabel 
                            active={sortBy === 'price'} 
                            direction={sortDirection} 
-                           onClick={handleChangeSortDirection} 
-                        />
-                        Price
+                           onClick={handleChangeSortDirectionByPrice} 
+                        >
+                           Price
+                        </TableSortLabel>
                      </TableCell>
-                     <TableCell align="right" style={{ minWidth: "100px" }}>Category</TableCell>
-                     <TableCell align="right" style={{ minWidth: "100px" }}>Date</TableCell>
+                     <TableCell align="right" style={{ minWidth: "100px" }}>
+                        <TableSortLabel 
+                           active={sortBy === 'category'} 
+                           direction={sortDirection} 
+                           onClick={handleChangeSortDirectionByCategory} 
+                        >
+                           Category
+                        </TableSortLabel>
+                     </TableCell>
+                     <TableCell align="right" style={{ minWidth: "100px" }}>
+                        <TableSortLabel 
+                           active={sortBy === 'date'} 
+                           direction={sortDirection} 
+                           onClick={handleChangeSortDirectionByDate} 
+                        >
+                           Date
+                        </TableSortLabel>
+                     </TableCell>
                      <TableCell align="left" style={{ minWidth: "100px" }}>Action</TableCell>
                   </TableRow>
                </TableHead>

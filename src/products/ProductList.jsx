@@ -36,7 +36,7 @@ const ProductList = () => {
    const [rowsPerPage, setRowsPerPage] = useState(5);
    const [formid, setFormid] = useState('');
    const [checkedRows, setCheckedRows] = useState([]);
-   const [selectAll, setSelectAll] = useState(false);
+   const [selectAll, setSelectAll] = useState(true);
 
    const rows = useAppStore((state) => state.rows);
    const setRows = useAppStore((state) => state.setRows);
@@ -161,20 +161,25 @@ const ProductList = () => {
             <Paper sx={{ width: "100%", overflow: 'hidden' }}>
                <Box height={15} />
                
-               <Stack direction="row" spacing={2} className="my-2 mb-2">
-                  <Search rows={rows} filterData={filterData} />
-                  <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}></Typography>
+               {!checkedRows.length > 0 ? (
+                  <Stack direction="row" spacing={2} className="my-2 mb-2">
+                     <Search rows={rows} filterData={filterData} />
+                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}></Typography>
 
-                  {!checkedRows.length > 0 ? (
                      <Button variant="contained" endIcon={<AddIcon />} onClick={handleAddOpen}>
                         Add
                      </Button>
-                  ) : (
+                  </Stack>
+               ) : (
+                  <Stack direction="row" spacing={2} className="my-2 mb-2">
+                     <Typography variant="h5" gutterBottom>{checkedRows.length} selected</Typography>
+                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}></Typography>
+
                      <Button variant="contained" endIcon={<DeleteIcon />} onClick={deleteCheckedRows}>
                         Delete
                      </Button>
-                  )}
-               </Stack>
+                  </Stack>
+               )}
                
                <ContainerTable 
                   rows={rows} 
