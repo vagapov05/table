@@ -5,7 +5,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { Paper, Typography, Button, Box, Modal } from '@mui/material';
 import { Stack } from '@mui/system';
 
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, orderBy, query } from 'firebase/firestore';
 import { db } from '../firebase-config';
 
 import Swal from 'sweetalert2';
@@ -37,6 +37,8 @@ const ProductList = () => {
    const [formid, setFormid] = useState('');
    const [checkedRows, setCheckedRows] = useState([]);
    const [selectAll, setSelectAll] = useState(true);
+   const [sortBy, setSortBy] = useState('price');
+   const [sortDirection, setSortDirection] = useState('asc');
 
    const rows = useAppStore((state) => state.rows);
    const setRows = useAppStore((state) => state.setRows);
@@ -54,12 +56,19 @@ const ProductList = () => {
 
    useEffect(() => {
       getUsers();
+      getProducts();
    }, []);
 
    const getUsers = async () => {
       const data = await getDocs(empCollectionRef);
       setRows(data.docs.map((doc) => ({...doc.data(), id: doc.id})));
    }
+
+   const getProducts = async () => {
+      const q = query(empCollectionRef, orderBy(sortBy, sortDirection));
+      const data = await getDocs(q);
+      setRows(data.docs.map((doc) => ({...doc.data(), id: doc.id})));
+   };
 
    const handleChangePage = (event, newPage) => {
       setPage(newPage);
@@ -182,8 +191,7 @@ const ProductList = () => {
                )}
                
                <ContainerTable 
-                  rows={rows} 
-                  setRows={setRows} 
+                  rows={rows}  
                   page={page} 
                   rowsPerPage={rowsPerPage} 
                   editData={editData} 
@@ -192,6 +200,11 @@ const ProductList = () => {
                   setCheckedRows={setCheckedRows} 
                   selectAll={selectAll} 
                   setSelectAll={setSelectAll} 
+                  getProducts={getProducts} 
+                  sortBy={sortBy} 
+                  setSortBy={setSortBy} 
+                  sortDirection={sortDirection} 
+                  setSortDirection={setSortDirection} 
                />
 
                <Pagination 
