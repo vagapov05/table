@@ -6,31 +6,7 @@ import { Stack } from '@mui/system';
 import { Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from '@mui/material';
 
 
-const ContainerTable = ({ rows, page, rowsPerPage, editData, deleteUser, checkedRows, setCheckedRows, selectAll, setSelectAll, getProducts, sortBy, setSortBy, sortDirection, setSortDirection }) => {
-   const handleChangeSortDirectionByName = () => {
-      setSortBy('name');
-      setSortDirection((sortDirection === 'asc') ? 'desc' : 'asc');
-      getProducts();
-   };
-
-   const handleChangeSortDirectionByPrice = () => {
-      setSortBy('price');
-      setSortDirection((sortDirection === 'asc') ? 'desc' : 'asc');
-      getProducts();
-   };
-
-   const handleChangeSortDirectionByCategory = () => {
-      setSortBy('category');
-      setSortDirection((sortDirection === 'asc') ? 'desc' : 'asc');
-      getProducts();
-   };
-
-   const handleChangeSortDirectionByDate = () => {
-      setSortBy('date');
-      setSortDirection((sortDirection === 'asc') ? 'desc' : 'asc');
-      getProducts();
-   };
-
+const ContainerTable = ({ rows, page, rowsPerPage, editData, deleteUser, checkedRows, setCheckedRows, selectAll, setSelectAll, sortBy, setSortBy, sortDirection, setSortDirection }) => {
    const handleSelectAll = () => {
       setSelectAll(!selectAll);
       if (selectAll) {
@@ -45,6 +21,16 @@ const ContainerTable = ({ rows, page, rowsPerPage, editData, deleteUser, checked
          setCheckedRows((prevCheckedRows) => prevCheckedRows.filter((id) => id !== rowId));
       } else {
          setCheckedRows((prevCheckedRows) => [...prevCheckedRows, rowId]);
+      }
+   };
+
+   const handleSortChange = (newSortBy) => {
+      setSortBy(newSortBy);
+
+      if (sortBy === newSortBy) {
+         setSortDirection((sortDirection === 'asc') ? 'desc' : 'asc');
+      } else {
+         setSortDirection('asc');
       }
    };
 
@@ -68,7 +54,7 @@ const ContainerTable = ({ rows, page, rowsPerPage, editData, deleteUser, checked
                         <TableSortLabel 
                            active={sortBy === 'name'} 
                            direction={sortDirection} 
-                           onClick={handleChangeSortDirectionByName} 
+                           onClick={() => handleSortChange('name')} 
                         >
                            Name
                         </TableSortLabel>
@@ -77,7 +63,7 @@ const ContainerTable = ({ rows, page, rowsPerPage, editData, deleteUser, checked
                         <TableSortLabel 
                            active={sortBy === 'price'} 
                            direction={sortDirection} 
-                           onClick={handleChangeSortDirectionByPrice} 
+                           onClick={() => handleSortChange('price')} 
                         >
                            Price
                         </TableSortLabel>
@@ -86,7 +72,7 @@ const ContainerTable = ({ rows, page, rowsPerPage, editData, deleteUser, checked
                         <TableSortLabel 
                            active={sortBy === 'category'} 
                            direction={sortDirection} 
-                           onClick={handleChangeSortDirectionByCategory} 
+                           onClick={() => handleSortChange('category')} 
                         >
                            Category
                         </TableSortLabel>
@@ -95,7 +81,7 @@ const ContainerTable = ({ rows, page, rowsPerPage, editData, deleteUser, checked
                         <TableSortLabel 
                            active={sortBy === 'date'} 
                            direction={sortDirection} 
-                           onClick={handleChangeSortDirectionByDate} 
+                           onClick={() => handleSortChange('date')} 
                         >
                            Date
                         </TableSortLabel>

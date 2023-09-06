@@ -56,15 +56,9 @@ const ProductList = () => {
 
    useEffect(() => {
       getUsers();
-      getProducts();
-   }, []);
+   }, [sortBy, sortDirection]);
 
    const getUsers = async () => {
-      const data = await getDocs(empCollectionRef);
-      setRows(data.docs.map((doc) => ({...doc.data(), id: doc.id})));
-   }
-
-   const getProducts = async () => {
       const q = query(empCollectionRef, orderBy(sortBy, sortDirection));
       const data = await getDocs(q);
       setRows(data.docs.map((doc) => ({...doc.data(), id: doc.id})));
@@ -191,7 +185,7 @@ const ProductList = () => {
                )}
                
                <ContainerTable 
-                  rows={rows}  
+                  rows={rows} 
                   page={page} 
                   rowsPerPage={rowsPerPage} 
                   editData={editData} 
@@ -200,7 +194,6 @@ const ProductList = () => {
                   setCheckedRows={setCheckedRows} 
                   selectAll={selectAll} 
                   setSelectAll={setSelectAll} 
-                  getProducts={getProducts} 
                   sortBy={sortBy} 
                   setSortBy={setSortBy} 
                   sortDirection={sortDirection} 
