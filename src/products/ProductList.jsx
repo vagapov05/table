@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Paper, Typography, Button, Box, Modal } from '@mui/material';
+import { Paper, Typography, Button, Box, Modal, Skeleton } from '@mui/material';
 import { Stack } from '@mui/system';
 
 import { collection, getDocs, deleteDoc, doc, orderBy, query } from 'firebase/firestore';
@@ -39,6 +39,7 @@ const ProductList = () => {
    const [selectAll, setSelectAll] = useState(true);
    const [sortBy, setSortBy] = useState('price');
    const [sortDirection, setSortDirection] = useState('asc');
+   const [loading, setLoading] = useState(true);
 
    const rows = useAppStore((state) => state.rows);
    const setRows = useAppStore((state) => state.setRows);
@@ -59,9 +60,13 @@ const ProductList = () => {
    }, [sortBy, sortDirection]);
 
    const getUsers = async () => {
+      setLoading(true);
+
       const q = query(empCollectionRef, orderBy(sortBy, sortDirection));
       const data = await getDocs(q);
       setRows(data.docs.map((doc) => ({...doc.data(), id: doc.id})));
+
+      setLoading(false);
    };
 
    const handleChangePage = (event, newPage) => {
@@ -123,11 +128,10 @@ const ProductList = () => {
       }
    }
 
-   const filterData = (v) => {
-      if (v) {
-         setRows([v]);
+   const filterData = (rows) => {
+      if (rows) {
+         setRows([rows]);
       } else {
-         setRows([]);
          getUsers();
       }
    }
@@ -167,6 +171,7 @@ const ProductList = () => {
                {!checkedRows.length > 0 ? (
                   <Stack direction="row" spacing={2} className="my-2 mb-2">
                      <Search rows={rows} filterData={filterData} />
+                     
                      <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}></Typography>
 
                      <Button variant="contained" endIcon={<AddIcon />} onClick={handleAddOpen}>
@@ -184,21 +189,37 @@ const ProductList = () => {
                   </Stack>
                )}
                
-               <ContainerTable 
-                  rows={rows} 
-                  page={page} 
-                  rowsPerPage={rowsPerPage} 
-                  editData={editData} 
-                  deleteUser={deleteUser} 
-                  checkedRows={checkedRows} 
-                  setCheckedRows={setCheckedRows} 
-                  selectAll={selectAll} 
-                  setSelectAll={setSelectAll} 
-                  sortBy={sortBy} 
-                  setSortBy={setSortBy} 
-                  sortDirection={sortDirection} 
-                  setSortDirection={setSortDirection} 
-               />
+               {loading 
+                  ?  <Paper sx={{ width: "100%", overflow: 'hidden' }}>
+                        <Box height={15} />
+                        <Skeleton variant="rectangular" width={'100%'} height={60} />
+                        <Box height={10} />
+                        <Skeleton variant="rectangular" width={'100%'} height={60} />
+                        <Box height={10} />
+                        <Skeleton variant="rectangular" width={'100%'} height={60} />
+                        <Box height={10} />
+                        <Skeleton variant="rectangular" width={'100%'} height={60} />
+                        <Box height={10} />
+                        <Skeleton variant="rectangular" width={'100%'} height={60} />
+                        <Box height={10} />
+                        <Skeleton variant="rectangular" width={'100%'} height={60} />
+                     </Paper>
+                  :  <ContainerTable 
+                        rows={rows} 
+                        page={page} 
+                        rowsPerPage={rowsPerPage} 
+                        editData={editData} 
+                        deleteUser={deleteUser} 
+                        checkedRows={checkedRows} 
+                        setCheckedRows={setCheckedRows} 
+                        selectAll={selectAll} 
+                        setSelectAll={setSelectAll} 
+                        sortBy={sortBy} 
+                        setSortBy={setSortBy} 
+                        sortDirection={sortDirection} 
+                        setSortDirection={setSortDirection} 
+                     />
+               }
 
                <Pagination 
                   rows={rows} 

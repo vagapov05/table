@@ -15,7 +15,7 @@ const Search = ({ rows, filterData }) => {
             getOptionLabel={(rows) => rows.name || ""} 
             renderInput={(params) => (
                <TextField {...params} size="small" label="Search Products" />
-            )}
+            )} 
          />
       </>
    )
