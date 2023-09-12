@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CircularProgress from '@mui/material/CircularProgress';
 import { Paper, Typography, Button, Box, Modal, Skeleton } from '@mui/material';
 import { Stack } from '@mui/system';
 
@@ -167,6 +168,12 @@ const ProductList = () => {
          {rows.length > 0 && (
             <Paper sx={{ width: "100%", overflow: 'hidden' }}>
                <Box height={15} />
+
+               {loading ? (
+                     <CircularProgress sx={{ position: "absolute", top: "6%", left: "50%" }} />
+                  ) : (
+                  []
+               )}
                
                {!checkedRows.length > 0 ? (
                   <Stack direction="row" spacing={2} className="my-2 mb-2">
@@ -189,37 +196,21 @@ const ProductList = () => {
                   </Stack>
                )}
                
-               {loading 
-                  ?  <Paper sx={{ width: "100%", overflow: 'hidden' }}>
-                        <Box height={15} />
-                        <Skeleton variant="rectangular" width={'100%'} height={60} />
-                        <Box height={10} />
-                        <Skeleton variant="rectangular" width={'100%'} height={60} />
-                        <Box height={10} />
-                        <Skeleton variant="rectangular" width={'100%'} height={60} />
-                        <Box height={10} />
-                        <Skeleton variant="rectangular" width={'100%'} height={60} />
-                        <Box height={10} />
-                        <Skeleton variant="rectangular" width={'100%'} height={60} />
-                        <Box height={10} />
-                        <Skeleton variant="rectangular" width={'100%'} height={60} />
-                     </Paper>
-                  :  <ContainerTable 
-                        rows={rows} 
-                        page={page} 
-                        rowsPerPage={rowsPerPage} 
-                        editData={editData} 
-                        deleteUser={deleteUser} 
-                        checkedRows={checkedRows} 
-                        setCheckedRows={setCheckedRows} 
-                        selectAll={selectAll} 
-                        setSelectAll={setSelectAll} 
-                        sortBy={sortBy} 
-                        setSortBy={setSortBy} 
-                        sortDirection={sortDirection} 
-                        setSortDirection={setSortDirection} 
-                     />
-               }
+               <ContainerTable 
+                  rows={rows} 
+                  page={page} 
+                  rowsPerPage={rowsPerPage} 
+                  editData={editData} 
+                  deleteUser={deleteUser} 
+                  checkedRows={checkedRows} 
+                  setCheckedRows={setCheckedRows} 
+                  selectAll={selectAll} 
+                  setSelectAll={setSelectAll} 
+                  sortBy={sortBy} 
+                  setSortBy={setSortBy} 
+                  sortDirection={sortDirection} 
+                  setSortDirection={setSortDirection} 
+               />
 
                <Pagination 
                   rows={rows} 
