@@ -63,9 +63,17 @@ const ProductList = () => {
    const getUsers = async () => {
       setLoading(true);
 
-      const q = query(empCollectionRef, orderBy(sortBy, sortDirection));
-      const data = await getDocs(q);
-      setRows(data.docs.map((doc) => ({...doc.data(), id: doc.id})));
+      try {
+         const q = query(empCollectionRef, orderBy(sortBy, sortDirection));
+         const data = await getDocs(q);
+         setRows(data.docs.map((doc) => ({...doc.data(), id: doc.id})));
+       } catch (error) {
+         Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message,
+         });
+       }
 
       setLoading(false);
    };
@@ -97,9 +105,17 @@ const ProductList = () => {
 
    const deleteApi = async (id) => {
       const userDoc = doc(db, "products", id);
-      await deleteDoc(userDoc);
-      Swal.fire("Deleted!", "Your file has been deleted.", "success");
-      getUsers();
+      try {
+         await deleteDoc(userDoc);
+         Swal.fire("Deleted!", "Your file has been deleted.", "success");
+         getUsers();
+      } catch (error) {
+         Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message,
+         });
+      }
    }
 
    const deleteCheckedRows = async () => {
@@ -107,7 +123,15 @@ const ProductList = () => {
       const deletedRows = await Promise.all(
          ids.map((id) => {
             const userDoc = doc(db, "products", id);
-            return deleteDoc(userDoc);
+            try {
+               return deleteDoc(userDoc);
+            } catch (error) {
+               Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: error.message,
+               });
+            }
          })
       )
     
